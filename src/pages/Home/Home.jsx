@@ -68,7 +68,10 @@ const Home = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {suggestions.map(course => (
                   <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden border border-ocean-100">
-                    <img src={course.image} alt={course.name} className="w-full h-48 object-cover" />
+                    <div className="relative">
+                      <img src={course.image} alt={course.name} className="w-full h-48 object-cover" />
+                    </div>
+                    
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">{course.name}</h3>
                       <p className="text-xl font-bold text-ocean-600 mb-3">{course.price.toLocaleString('vi-VN')}đ</p>
@@ -104,7 +107,14 @@ const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {courses.map(course => (
                 <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group hover:-translate-y-1">
-                  <img src={course.image} alt={course.name} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <div className="relative">
+                    <img 
+                      src={course.image} 
+                      alt={course.name} 
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" 
+                    />
+                  </div>
+                  
                   <div className="p-6">
                     <h3 className="font-bold text-gray-800 mb-2 text-lg line-clamp-2 group-hover:text-ocean-600 transition-colors">{course.name}</h3>
                     <p className="text-gray-600 mb-4 text-sm line-clamp-3">{course.description}</p>

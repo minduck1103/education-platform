@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaGraduationCap, FaUser, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
+import { HeartIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '../../contexts/AuthContext';
 import Modal from '../common/Modal';
 import AuthModal from '../Auth/AuthModal';
@@ -43,15 +44,16 @@ const Header = () => {
             </Link>
           </div>
 
-          {/* Search Bar - Center */}
+          {/* Search Bar with integrated filter - Center */}
           <div className="flex justify-center">
             <div className="w-full max-w-lg">
               <SearchBar />
             </div>
           </div>
 
-          {/* Auth Section - Right */}
+          {/* Right Section - Auth */}
           <div className="flex justify-end">
+            {/* Auth Section */}
             {isAuthenticated ? (
               /* User Dropdown */
               <div className="relative">
@@ -81,6 +83,15 @@ const Header = () => {
                         {currentUser?.email}
                       </p>
                     </div>
+                    
+                    <Link
+                      to="/favorites"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <HeartIcon className="w-4 h-4 text-gray-400" />
+                      <span>Yêu thích của tôi</span>
+                    </Link>
                     
                     <button
                       onClick={() => setShowUserDropdown(false)}
