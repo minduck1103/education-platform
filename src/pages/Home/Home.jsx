@@ -1,5 +1,6 @@
 import { FaRobot } from 'react-icons/fa';
 import { useSearch } from '../../contexts/SearchContext';
+import bannerImage from '../../assets/banner.png';
 
 const Home = () => {
   const { 
@@ -16,11 +17,19 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Hero Section */}
-        <section className="text-center mb-12 py-8">
-          
-          
-          {/* AI Suggestions Button */}
+        {/* Banner Section */}
+        <section className="mb-8">
+          <div className="relative rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+            <img 
+              src={bannerImage} 
+              alt="Banner Loomly" 
+              className="w-full h-64 md:h-80 lg:h-96 xl:h-[28rem] object-contain bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-50"
+            />
+          </div>
+        </section>
+
+        {/* AI Suggestions Button Section */}
+        <section className="text-center mb-12">
           <button 
             className="inline-flex items-center gap-2 bg-gradient-to-r from-ocean-600 via-ocean-700 to-ocean-800 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed hover:from-ocean-500 hover:via-ocean-600 hover:to-ocean-700"
             onClick={handleGetSuggestions}
