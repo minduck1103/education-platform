@@ -63,13 +63,6 @@ const Login = ({ onSwitchToRegister, onClose }) => {
     setLoading(false);
   };
 
-  const fillDemoData = () => {
-    setFormData({
-      email: 'demo@eduplatform.com',
-      password: 'demo123'
-    });
-  };
-
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Header */}

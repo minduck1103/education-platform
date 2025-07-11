@@ -1,68 +1,24 @@
-import { useState, useEffect } from 'react';
-import { FaRobot, FaSearch } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-import { getProducts, getSuggestions } from '../../services/api';
+import { FaRobot } from 'react-icons/fa';
+import { useSearch } from '../../contexts/SearchContext';
 
 const Home = () => {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
-  const [selectedPriceRange, setSelectedPriceRange] = useState({ label: 'Tất cả', min: 0, max: Infinity });
-  const [suggestions, setSuggestions] = useState([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-
-  // Load initial data
-  useEffect(() => {
-    loadCourses();
-  }, []);
-
-  const loadCourses = async () => {
-    try {
-      setLoading(true);
-      const response = await getProducts({
-        search: searchTerm,
-        category: selectedCategory,
-        priceRange: selectedPriceRange
-      });
-      setCourses(response.data.courses);
-    } catch (error) {
-      toast.error('Không thể tải danh sách khóa học');
-      console.error('Error loading courses:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGetSuggestions = async () => {
-    try {
-      setLoadingSuggestions(true);
-      const response = await getSuggestions('user_123');
-      setSuggestions(response.data.suggestions);
-      toast.success(`Tìm thấy ${response.data.suggestions.length} khóa học phù hợp!`);
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setLoadingSuggestions(false);
-    }
-  };
-
-  // Update courses when filters change
-  useEffect(() => {
-    loadCourses();
-  }, [searchTerm, selectedCategory, selectedPriceRange]);
+  const { 
+    courses, 
+    loading, 
+    searchTerm, 
+    selectedCategory, 
+    selectedPriceRange, 
+    suggestions, 
+    loadingSuggestions,
+    handleGetSuggestions 
+  } = useSearch();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Hero Section */}
         <section className="text-center mb-12 py-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4 leading-tight">
-            Khám phá khóa học phù hợp với bạn
-          </h1>
-          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-            Nền tảng học tập thông minh với gợi ý AI cá nhân hóa
-          </p>
+          
           
           {/* AI Suggestions Button */}
           <button 
@@ -73,58 +29,6 @@ const Home = () => {
             <FaRobot className="text-xl" />
             {loadingSuggestions ? 'Đang phân tích...' : 'Gợi ý sản phẩm phù hợp'}
           </button>
-        </section>
-
-        {/* Search and Filter Section */}
-        <section className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-            <div className="relative flex-1 max-w-md">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm khóa học..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent transition-all"
-              />
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-              <select 
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent transition-all bg-white min-w-48"
-              >
-                <option value="Tất cả">Tất cả danh mục</option>
-                <option value="Lập trình Frontend">Lập trình Frontend</option>
-                <option value="Lập trình Backend">Lập trình Backend</option>
-                <option value="Lập trình Python">Lập trình Python</option>
-                <option value="Thiết kế UI/UX">Thiết kế UI/UX</option>
-                <option value="Digital Marketing">Digital Marketing</option>
-                <option value="Data Science">Data Science</option>
-              </select>
-
-              <select 
-                value={selectedPriceRange.label}
-                onChange={(e) => {
-                  const ranges = [
-                    { label: 'Tất cả', min: 0, max: Infinity },
-                    { label: 'Dưới 500K', min: 0, max: 500000 },
-                    { label: '500K - 1 triệu', min: 500000, max: 1000000 },
-                    { label: 'Trên 1 triệu', min: 1000000, max: Infinity }
-                  ];
-                  const range = ranges.find(r => r.label === e.target.value);
-                  setSelectedPriceRange(range);
-                }}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ocean-500 focus:border-transparent transition-all bg-white min-w-48"
-              >
-                <option value="Tất cả">Tất cả mức giá</option>
-                <option value="Dưới 500K">Dưới 500K</option>
-                <option value="500K - 1 triệu">500K - 1 triệu</option>
-                <option value="Trên 1 triệu">Trên 1 triệu</option>
-              </select>
-            </div>
-          </div>
         </section>
 
         {/* AI Suggestions Section */}
