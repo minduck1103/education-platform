@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { FaRobot } from 'react-icons/fa';
 import { useSearch } from '../../contexts/SearchContext';
 import bannerImage from '../../assets/banner.png';
+import Modal from '../../components/common/Modal';
+import CourseDetailModal from '../../components/Course/CourseDetailModal';
 
 const Home = () => {
   const { 
@@ -13,6 +16,21 @@ const Home = () => {
     loadingSuggestions,
     handleGetSuggestions 
   } = useSearch();
+
+  // Modal state
+  const [showCourseDetail, setShowCourseDetail] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
+  // Handle course detail modal
+  const handleCourseClick = (course) => {
+    setSelectedCourse(course);
+    setShowCourseDetail(true);
+  };
+
+  const closeCourseDetail = () => {
+    setShowCourseDetail(false);
+    setSelectedCourse(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-50">
@@ -54,7 +72,10 @@ const Home = () => {
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">{course.name}</h3>
                       <p className="text-xl font-bold text-ocean-600 mb-3">{course.price.toLocaleString('vi-VN')}đ</p>
-                      <button className="w-full bg-gradient-to-r from-ocean-600 to-ocean-700 text-white py-2 px-4 rounded-md hover:from-ocean-500 hover:to-ocean-600 transition-all">
+                      <button 
+                        onClick={() => handleCourseClick(course)}
+                        className="w-full bg-gradient-to-r from-ocean-600 to-ocean-700 text-white py-2 px-4 rounded-md hover:from-ocean-500 hover:to-ocean-600 transition-all"
+                      >
                         Xem chi tiết
                       </button>
                     </div>
@@ -89,7 +110,10 @@ const Home = () => {
                     <p className="text-gray-600 mb-4 text-sm line-clamp-3">{course.description}</p>
                     <div className="flex justify-between items-center">
                       <span className="text-2xl font-bold text-ocean-600">{course.price.toLocaleString('vi-VN')}đ</span>
-                      <button className="bg-gradient-to-r from-ocean-600 to-ocean-700 text-white px-4 py-2 rounded-md hover:from-ocean-500 hover:to-ocean-600 transition-all shadow-md hover:shadow-lg">
+                      <button 
+                        onClick={() => handleCourseClick(course)}
+                        className="bg-gradient-to-r from-ocean-600 to-ocean-700 text-white px-4 py-2 rounded-md hover:from-ocean-500 hover:to-ocean-600 transition-all shadow-md hover:shadow-lg"
+                      >
                         Xem chi tiết
                       </button>
                     </div>
@@ -105,6 +129,19 @@ const Home = () => {
           )}
         </section>
       </div>
+
+      {/* Course Detail Modal */}
+      <Modal
+        isOpen={showCourseDetail}
+        onClose={closeCourseDetail}
+        size="3xl"
+        showCloseButton={true}
+      >
+        <CourseDetailModal 
+          course={selectedCourse}
+          onClose={closeCourseDetail}
+        />
+      </Modal>
     </div>
   );
 };
