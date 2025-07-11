@@ -1,7 +1,14 @@
 import { FaStar, FaStarHalfAlt, FaRegStar, FaClock, FaUsers, FaTag, FaGraduationCap } from 'react-icons/fa';
+import { HeartIcon } from '@heroicons/react/24/solid';
+import { HeartIcon as HeartOutlineIcon } from '@heroicons/react/24/outline';
+import { useFavorites } from '../../contexts/FavoritesContext';
 
-const CourseDetailModal = ({ course, onClose }) => {
+const CourseDetailModal = ({ course }) => {
+  const { toggleFavorite, isFavorite } = useFavorites();
+  
   if (!course) return null;
+
+  const isCourseFavorited = isFavorite(course.id);
 
   // Mock additional course details
   const courseDetails = {
@@ -49,6 +56,10 @@ const CourseDetailModal = ({ course, onClose }) => {
     }
     
     return stars;
+  };
+
+  const handleFavoriteToggle = () => {
+    toggleFavorite(course);
   };
 
   return (
@@ -139,8 +150,22 @@ const CourseDetailModal = ({ course, onClose }) => {
                 Đăng ký ngay
               </button>
 
-              <button className="w-full border-2 border-ocean-600 text-ocean-600 py-3 px-6 rounded-lg font-semibold hover:bg-ocean-50 transition-all mb-6">
-                Thêm vào yêu thích
+              <button 
+                onClick={handleFavoriteToggle}
+                className={`w-full py-3 px-6 rounded-lg font-semibold transition-all mb-6 flex items-center justify-center gap-2 whitespace-nowrap ${
+                  isCourseFavorited 
+                    ? 'bg-gradient-to-r from-ocean-600 to-ocean-700 text-white hover:bg-ocean-800' 
+                    : 'border-2 border-ocean-600 text-ocean-600 hover:bg-ocean-50'
+                }`}
+              >
+                {isCourseFavorited ? (
+                  <HeartIcon className="w-5 h-5 text-white" />
+                ) : (
+                  <HeartOutlineIcon className="w-5 h-5 text-ocean-600" />
+                )}
+                <span className={isCourseFavorited ? 'text-white' : 'text-ocean-600'}>
+                  {isCourseFavorited ? 'Đã yêu thích' : 'Yêu thích'}
+                </span>
               </button>
 
               {/* Tính năng khóa học */}
