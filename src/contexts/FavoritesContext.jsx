@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { useAuth } from './AuthContext';
 
 const FavoritesContext = createContext();
 
@@ -13,6 +14,8 @@ export const useFavorites = () => {
 
 export const FavoritesProvider = ({ children }) => {
   const [favorites, setFavorites] = useState([]);
+  const [onLoginRequired, setOnLoginRequired] = useState(null);
+  const { isAuthenticated } = useAuth();
 
   // Load favorites from localStorage on init
   useEffect(() => {
@@ -36,6 +39,13 @@ export const FavoritesProvider = ({ children }) => {
   }, [favorites]);
 
   const addToFavorites = (course) => {
+    if (!isAuthenticated) {
+      if (onLoginRequired) {
+        onLoginRequired();
+      }
+      return;
+    }
+    
     if (!isFavorite(course.id)) {
       setFavorites(prev => [...prev, course]);
       toast.success(`Đã thêm "${course.name}" vào yêu thích`);
@@ -43,6 +53,13 @@ export const FavoritesProvider = ({ children }) => {
   };
 
   const removeFromFavorites = (courseId) => {
+    if (!isAuthenticated) {
+      if (onLoginRequired) {
+        onLoginRequired();
+      }
+      return;
+    }
+    
     const course = favorites.find(fav => fav.id === courseId);
     setFavorites(prev => prev.filter(fav => fav.id !== courseId));
     if (course) {
@@ -51,6 +68,13 @@ export const FavoritesProvider = ({ children }) => {
   };
 
   const toggleFavorite = (course) => {
+    if (!isAuthenticated) {
+      if (onLoginRequired) {
+        onLoginRequired();
+      }
+      return;
+    }
+    
     if (isFavorite(course.id)) {
       removeFromFavorites(course.id);
     } else {
@@ -74,7 +98,8 @@ export const FavoritesProvider = ({ children }) => {
     toggleFavorite,
     isFavorite,
     clearAllFavorites,
-    favoritesCount: favorites.length
+    favoritesCount: favorites.length,
+    setOnLoginRequired
   };
 
   return (
