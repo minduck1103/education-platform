@@ -19,6 +19,7 @@ export const SearchProvider = ({ children }) => {
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [selectedPriceRange, setSelectedPriceRange] = useState({ label: 'Tất cả', min: 0, max: Infinity });
   const [suggestions, setSuggestions] = useState([]);
+  const [suggestionData, setSuggestionData] = useState(null); // Thêm state cho suggestion data
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const categories = [
@@ -28,7 +29,10 @@ export const SearchProvider = ({ children }) => {
     'Lập trình Python',
     'Thiết kế UI/UX',
     'Digital Marketing',
-    'Data Science'
+    'Data Science',
+    'Mobile Development',
+    'Ngoại ngữ',
+    'Cloud Computing'
   ];
 
   const priceRanges = [
@@ -59,10 +63,29 @@ export const SearchProvider = ({ children }) => {
     try {
       setLoadingSuggestions(true);
       const response = await getSuggestions('user_123');
+      
+      // Lưu suggestions và suggestion data
       setSuggestions(response.data.suggestions);
-      toast.success(`Tìm thấy ${response.data.suggestions.length} khóa học phù hợp!`);
+      setSuggestionData({
+        analysis: response.data.analysis,
+        reason: response.data.reason,
+        confidence: response.data.confidence,
+        usedAI: response.data.usedAI,
+        usedFallback: response.data.usedFallback
+      });
+      
+      // Hiển thị toast thông báo
+      const message = response.data.usedAI 
+        ? `AI đã phân tích và tìm thấy ${response.data.suggestions.length} khóa học phù hợp!`
+        : `Tìm thấy ${response.data.suggestions.length} khóa học phù hợp!`;
+      
+      toast.success(message);
+      
+
+      
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || 'Không thể lấy gợi ý lúc này');
+      console.error('Error getting suggestions:', error);
     } finally {
       setLoadingSuggestions(false);
     }
@@ -87,6 +110,11 @@ export const SearchProvider = ({ children }) => {
     setSelectedPriceRange({ label: 'Tất cả', min: 0, max: Infinity });
   };
 
+  const clearSuggestions = () => {
+    setSuggestions([]);
+    setSuggestionData(null);
+  };
+
   // Load courses when filters change
   useEffect(() => {
     loadCourses();
@@ -104,6 +132,7 @@ export const SearchProvider = ({ children }) => {
     selectedCategory,
     selectedPriceRange,
     suggestions,
+    suggestionData, // Thêm vào context value
     loadingSuggestions,
     categories,
     priceRanges,
@@ -112,6 +141,7 @@ export const SearchProvider = ({ children }) => {
     updatePriceRange,
     handleGetSuggestions,
     clearFilters,
+    clearSuggestions, // Thêm function clear suggestions
     loadCourses
   };
 

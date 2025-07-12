@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { mockCourses, mockUser } from './mockData';
+import { getAICourseSuggestions } from './openaiService';
 
 // Base URL cho API (giả lập)
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -61,38 +62,55 @@ export const getProducts = async (params = {}) => {
   }
 };
 
-// GET /api/suggestions?userId=xxx - Gợi ý AI
+// GET /api/suggestions?userId=xxx - Gợi ý AI với OpenAI
 export const getSuggestions = async (userId) => {
   try {
-    // Mock AI logic based on user behavior
+    // Lấy thông tin user từ mock data
     const user = mockUser;
-    const viewedCourses = user.viewHistory;
-    const favoriteCourses = user.favorites;
     
-    // Simple recommendation logic:
-    // 1. Courses in similar categories as viewed/favorited
-    // 2. Courses not yet viewed
-    // 3. Higher rated courses
+    // Lấy các khóa học đã xem và yêu thích
+    const viewedCourses = mockCourses.filter(course => 
+      user.viewHistory.includes(course.id)
+    );
     
-    const viewedCategories = mockCourses
-      .filter(course => viewedCourses.includes(course.id))
-      .map(course => course.category);
+    const favoriteCourses = mockCourses.filter(course => 
+      user.favorites.includes(course.id)
+    );
     
-    const suggestions = mockCourses
-      .filter(course => 
-        !viewedCourses.includes(course.id) && // Not viewed yet
-        !favoriteCourses.includes(course.id) && // Not in favorites
-        (viewedCategories.includes(course.category) || course.rating >= 4.6) // Similar category or high rating
-      )
-      .sort((a, b) => b.rating - a.rating) // Sort by rating
-      .slice(0, 4); // Top 4 suggestions
+    // Lấy danh mục quan tâm
+    const interestedCategories = [...new Set([
+      ...viewedCourses.map(c => c.category),
+      ...favoriteCourses.map(c => c.category)
+    ])];
     
+    // Tạo user profile cho OpenAI
+    const userProfile = {
+      userId,
+      viewHistory: viewedCourses,
+      favorites: favoriteCourses,
+      categories: interestedCategories
+    };
+    
+    // Lấy các khóa học có thể gợi ý (chưa xem/yêu thích)
+    const availableCourses = mockCourses.filter(course => 
+      !user.viewHistory.includes(course.id) && 
+      !user.favorites.includes(course.id)
+    );
+    
+    // Gọi OpenAI API để lấy gợi ý
+    const aiResponse = await getAICourseSuggestions(userProfile, availableCourses);
+    
+    // Thêm mock delay để giống API thật
     return await mockApiDelay({
-      suggestions,
-      reason: "Dựa trên lịch sử xem và sở thích của bạn",
-      confidence: 0.85,
-      success: true
-    }, 1000); // Longer delay to simulate AI processing
+      suggestions: aiResponse.suggestions,
+      reason: aiResponse.reason,
+      analysis: aiResponse.analysis,
+      confidence: aiResponse.confidence,
+      success: true,
+      usedAI: !aiResponse.usedFallback,
+      usedFallback: aiResponse.usedFallback || false
+    }, 1500); // Delay lâu hơn vì AI processing
+    
   } catch (error) {
     console.error('Error getting suggestions:', error);
     throw new Error('Không thể lấy gợi ý lúc này. Vui lòng thử lại sau!');

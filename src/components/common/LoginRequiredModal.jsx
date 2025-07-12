@@ -1,7 +1,7 @@
 import { FaExclamationTriangle, FaSignInAlt, FaUserPlus } from 'react-icons/fa';
 import Modal from './Modal';
 
-const LoginRequiredModal = ({ isOpen, onClose, onLoginClick, onRegisterClick }) => {
+const LoginRequiredModal = ({ isOpen, onClose, onLoginClick, onRegisterClick, message = "Bạn cần đăng nhập để có thể thêm khóa học vào danh sách yêu thích của mình." }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="text-center p-6">
@@ -14,7 +14,7 @@ const LoginRequiredModal = ({ isOpen, onClose, onLoginClick, onRegisterClick }) 
         </h2>
         
         <p className="text-gray-600 mb-6">
-          Bạn cần đăng nhập để có thể thêm khóa học vào danh sách yêu thích của mình.
+          {message}
         </p>
         
         <div className="flex gap-3 justify-center">
