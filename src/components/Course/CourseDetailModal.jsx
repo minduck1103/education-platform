@@ -1,10 +1,23 @@
+import { useState, useEffect } from 'react';
 import { FaStar, FaStarHalfAlt, FaRegStar, FaClock, FaUsers, FaTag, FaGraduationCap } from 'react-icons/fa';
 import { HeartIcon } from '@heroicons/react/24/solid';
 import { HeartIcon as HeartOutlineIcon } from '@heroicons/react/24/outline';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import LoginRequiredModal from '../common/LoginRequiredModal';
+import AuthModal from '../Auth/AuthModal';
 
 const CourseDetailModal = ({ course }) => {
-  const { toggleFavorite, isFavorite } = useFavorites();
+  const { toggleFavorite, isFavorite, setOnLoginRequired } = useFavorites();
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+  
+  // Set callback for when login is required
+  useEffect(() => {
+    setOnLoginRequired(() => {
+      return () => setShowLoginRequired(true);
+    });
+  }, [setOnLoginRequired]);
   
   if (!course) return null;
 
@@ -60,6 +73,27 @@ const CourseDetailModal = ({ course }) => {
 
   const handleFavoriteToggle = () => {
     toggleFavorite(course);
+  };
+
+  // Handle login required modal
+  const handleLoginClick = () => {
+    setShowLoginRequired(false);
+    setAuthMode('login');
+    setShowAuthModal(true);
+  };
+
+  const handleRegisterClick = () => {
+    setShowLoginRequired(false);
+    setAuthMode('register');  
+    setShowAuthModal(true);
+  };
+
+  const handleCloseLoginRequired = () => {
+    setShowLoginRequired(false);
+  };
+
+  const handleCloseAuth = () => {
+    setShowAuthModal(false);
   };
 
   return (
@@ -191,6 +225,22 @@ const CourseDetailModal = ({ course }) => {
           </div>
         </div>
       </div>
+
+      {/* Login Required Modal */}
+      <LoginRequiredModal 
+        isOpen={showLoginRequired}
+        onClose={handleCloseLoginRequired}
+        onLoginClick={handleLoginClick}
+        onRegisterClick={handleRegisterClick}
+      />
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal 
+          onClose={handleCloseAuth}
+          initialMode={authMode}
+        />
+      )}
     </div>
   );
 };

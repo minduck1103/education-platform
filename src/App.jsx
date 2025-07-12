@@ -28,7 +28,7 @@ function App() {
               {/* Toast notifications */}
               <ToastContainer
                 position="top-right"
-                autoClose={3000}
+                autoClose={2000}
                 hideProgressBar={false}
                 newestOnTop={false}
                 closeOnClick
@@ -39,7 +39,7 @@ function App() {
                 theme="light"
                 className="z-50"
               />
-            </div>
+      </div>
           </FavoritesProvider>
         </SearchProvider>
       </AuthProvider>
