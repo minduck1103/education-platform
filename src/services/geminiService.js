@@ -18,7 +18,7 @@ THÔNG TIN HỌC VIÊN:
 
 CÁC KHÓA HỌC CÓ SẴN:
 ${availableCourses.map(course => 
-  `- "${course.name}" (${course.category}) - ${course.price.toLocaleString('vi-VN')}đ - Rating: ${course.rating}/5 - ${course.description}`
+  `- ID: ${course.id} | "${course.name}" (${course.category}) - ${course.price.toLocaleString('vi-VN')}đ - Rating: ${course.rating}/5 - ${course.description}`
 ).join('\n')}
 
 YÊU CẦU:
@@ -32,7 +32,7 @@ YÊU CẦU:
 {
   "suggestions": [
     {
-      "courseId": "id_khóa_học",
+      "courseId": "course_001",
       "courseName": "tên khóa học",
       "reason": "lý do gợi ý cụ thể",
       "confidence": 0.85
@@ -41,6 +41,8 @@ YÊU CẦU:
   "analysis": "phân tích ngắn gọn về sở thích học viên",
   "overallReason": "lý do tổng quan cho việc gợi ý"
 }
+
+QUAN TRỌNG: Hãy sử dụng chính xác courseId (như course_001, course_002, ...) từ danh sách CÁC KHÓA HỌC CÓ SẴN ở trên.
 
 Chỉ trả về JSON, không thêm text khác.
   `;

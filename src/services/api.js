@@ -65,16 +65,24 @@ export const getProducts = async (params = {}) => {
 // GET /api/suggestions?userId=xxx - Gợi ý AI với Gemini
 export const getSuggestions = async (userId) => {
   try {
-    // Lấy thông tin user từ mock data
-    const user = mockUser;
+    // Lấy thông tin user thực tế từ localStorage
+    const favoriteObjects = JSON.parse(localStorage.getItem('loomly_favorites') || '[]');
+    const realViewHistory = JSON.parse(localStorage.getItem('viewHistory') || '[]');
+    
+    // Extract IDs từ favorite objects
+    const realFavorites = favoriteObjects.map(fav => fav.id);
+    
+    // Nếu không có viewHistory, sử dụng một số khóa học khác favorites làm fallback
+    const effectiveViewHistory = realViewHistory.length > 0 ? realViewHistory : 
+      mockCourses.slice(0, 3).map(c => c.id).filter(id => !realFavorites.includes(id));
     
     // Lấy các khóa học đã xem và yêu thích
     const viewedCourses = mockCourses.filter(course => 
-      user.viewHistory.includes(course.id)
+      effectiveViewHistory.includes(course.id)
     );
     
     const favoriteCourses = mockCourses.filter(course => 
-      user.favorites.includes(course.id)
+      realFavorites.includes(course.id)
     );
     
     // Lấy danh mục quan tâm
@@ -93,8 +101,8 @@ export const getSuggestions = async (userId) => {
     
     // Lấy các khóa học có thể gợi ý (chưa xem/yêu thích)
     const availableCourses = mockCourses.filter(course => 
-      !user.viewHistory.includes(course.id) && 
-      !user.favorites.includes(course.id)
+      !effectiveViewHistory.includes(course.id) && 
+      !realFavorites.includes(course.id)
     );
     
     // Gọi Gemini API để lấy gợi ý
