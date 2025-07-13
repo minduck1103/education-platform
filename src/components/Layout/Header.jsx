@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaGraduationCap, FaUser, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
+import { FaGraduationCap, FaUser, FaSignInAlt, FaUserPlus, FaSignOutAlt, FaChevronDown, FaClock } from 'react-icons/fa';
 import { HeartIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '../../contexts/AuthContext';
 import Modal from '../common/Modal';
 import AuthModal from '../Auth/AuthModal';
+import ViewHistoryModal from '../common/ViewHistoryModal';
+import CourseDetailModal from '../Course/CourseDetailModal';
 import SearchBar from '../Search/SearchBar';
 
 const Header = () => {
@@ -12,6 +14,9 @@ const Header = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showViewHistoryModal, setShowViewHistoryModal] = useState(false);
+  const [showCourseDetail, setShowCourseDetail] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
   const openLoginModal = () => {
     setAuthMode('login');
@@ -30,6 +35,25 @@ const Header = () => {
   const handleLogout = () => {
     logout();
     setShowUserDropdown(false);
+  };
+
+  const handleViewHistoryClick = () => {
+    setShowViewHistoryModal(true);
+    setShowUserDropdown(false);
+  };
+
+  const handleCourseDetailClick = (course) => {
+    setSelectedCourse(course);
+    setShowCourseDetail(true);
+  };
+
+  const closeViewHistoryModal = () => {
+    setShowViewHistoryModal(false);
+  };
+
+  const closeCourseDetail = () => {
+    setShowCourseDetail(false);
+    setSelectedCourse(null);
   };
 
   return (
@@ -94,6 +118,14 @@ const Header = () => {
                     </Link>
                     
                     <button
+                      onClick={handleViewHistoryClick}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <FaClock className="text-gray-400" />
+                      <span>Lịch sử xem</span>
+                    </button>
+                    
+                    <button
                       onClick={() => setShowUserDropdown(false)}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
@@ -148,6 +180,25 @@ const Header = () => {
           initialMode={authMode}
         />
       </Modal>
+
+      {/* View History Modal */}
+      <ViewHistoryModal
+        isOpen={showViewHistoryModal}
+        onClose={closeViewHistoryModal}
+        onCourseClick={handleCourseDetailClick}
+      />
+
+      {/* Course Detail Modal */}
+      {selectedCourse && (
+        <Modal
+          isOpen={showCourseDetail}
+          onClose={closeCourseDetail}
+          size="3xl"
+          showCloseButton={true}
+        >
+          <CourseDetailModal course={selectedCourse} />
+        </Modal>
+      )}
 
       {/* Click outside to close dropdown */}
       {showUserDropdown && (
