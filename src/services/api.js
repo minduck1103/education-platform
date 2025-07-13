@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { mockCourses, mockUser } from './mockData';
-import { getAICourseSuggestions } from './openaiService';
+import { getAICourseSuggestions } from './geminiService';
 
 // Base URL cho API (giả lập)
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -62,7 +62,7 @@ export const getProducts = async (params = {}) => {
   }
 };
 
-// GET /api/suggestions?userId=xxx - Gợi ý AI với OpenAI
+// GET /api/suggestions?userId=xxx - Gợi ý AI với Gemini
 export const getSuggestions = async (userId) => {
   try {
     // Lấy thông tin user từ mock data
@@ -83,7 +83,7 @@ export const getSuggestions = async (userId) => {
       ...favoriteCourses.map(c => c.category)
     ])];
     
-    // Tạo user profile cho OpenAI
+    // Tạo user profile cho Gemini
     const userProfile = {
       userId,
       viewHistory: viewedCourses,
@@ -97,7 +97,7 @@ export const getSuggestions = async (userId) => {
       !user.favorites.includes(course.id)
     );
     
-    // Gọi OpenAI API để lấy gợi ý
+    // Gọi Gemini API để lấy gợi ý
     const aiResponse = await getAICourseSuggestions(userProfile, availableCourses);
     
     // Thêm mock delay để giống API thật
