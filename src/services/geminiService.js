@@ -18,183 +18,129 @@ THÔNG TIN HỌC VIÊN:
 
 CÁC KHÓA HỌC CÓ SẴN:
 ${availableCourses.map(course => 
-  `- ID: ${course.id} | "${course.name}" (${course.category}) - ${course.price.toLocaleString('vi-VN')}đ - Rating: ${course.rating}/5 - ${course.description}`
+  `ID: ${course.id} | "${course.name}" - ${course.category} - ${course.price.toLocaleString('vi-VN')}đ - ${course.level}`
 ).join('\n')}
 
 YÊU CẦU:
 1. Phân tích sở thích của học viên dựa trên lịch sử xem và yêu thích
-2. Gợi ý 3-4 khóa học phù hợp nhất
-3. Ưu tiên các khóa học có liên quan đến sở thích đã thể hiện
-4. Không gợi ý các khóa học đã xem hoặc yêu thích
-5. Giải thích lý do gợi ý
+2. Gợi ý 3-5 khóa học phù hợp nhất (không gợi ý khóa học đã yêu thích)
+3. Ưu tiên các khóa học cùng danh mục hoặc liên quan
+4. Trả về CHÍNH XÁC theo format JSON sau:
 
-ĐỊNH DẠNG PHẢN HỒI (JSON):
 {
   "suggestions": [
     {
       "courseId": "course_001",
-      "courseName": "tên khóa học",
-      "reason": "lý do gợi ý cụ thể",
-      "confidence": 0.85
+      "reason": "Lý do gợi ý ngắn gọn",
+      "confidence": 0.95
     }
   ],
-  "analysis": "phân tích ngắn gọn về sở thích học viên",
-  "overallReason": "lý do tổng quan cho việc gợi ý"
+  "analysis": "Phân tích ngắn gọn về sở thích học viên"
 }
 
-QUAN TRỌNG: Hãy sử dụng chính xác courseId (như course_001, course_002, ...) từ danh sách CÁC KHÓA HỌC CÓ SẴN ở trên.
-
-Chỉ trả về JSON, không thêm text khác.
-  `;
+QUAN TRỌNG: Chỉ trả về JSON, không thêm text nào khác.`;
 };
 
-// Gọi Gemini API để lấy gợi ý
+// Gợi ý khóa học bằng AI
 export const getAICourseSuggestions = async (userProfile, availableCourses) => {
   try {
     // Kiểm tra API key
     if (!validateApiKey(GEMINI_CONFIG.apiKey)) {
-      throw new Error('Gemini API key không hợp lệ');
+      return getFallbackSuggestions(userProfile, availableCourses);
     }
 
-    // Tạo prompt
-    const prompt = createSuggestionPrompt(userProfile, availableCourses);
+    // Nếu không có dữ liệu người dùng, trả về fallback
+    if (!userProfile.viewHistory.length && !userProfile.favorites.length) {
+      return getFallbackSuggestions(userProfile, availableCourses);
+    }
 
-    // Khởi tạo model
+    // Tạo model
     const model = genAI.getGenerativeModel({ 
       model: GEMINI_CONFIG.model,
       generationConfig: GEMINI_CONFIG.generationConfig,
       safetySettings: GEMINI_CONFIG.safetySettings
     });
 
-    // Gọi Gemini API
+    // Tạo prompt
+    const prompt = createSuggestionPrompt(userProfile, availableCourses);
+
+    // Gọi API
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
-    // Parse phản hồi JSON
-    let parsedResponse;
-    try {
-      // Tìm và extract JSON từ response
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsedResponse = JSON.parse(jsonMatch[0]);
-      } else {
-        parsedResponse = JSON.parse(text);
-      }
-    } catch (parseError) {
-      console.error('Error parsing Gemini response:', parseError);
-      throw new Error('Phản hồi từ AI không hợp lệ');
-    }
-    
+
+    // Parse JSON response
+    const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const aiResponse = JSON.parse(cleanedText);
+
     // Validate response structure
-    if (!parsedResponse.suggestions || !Array.isArray(parsedResponse.suggestions)) {
-      throw new Error('Phản hồi từ AI không hợp lệ');
+    if (!aiResponse.suggestions || !Array.isArray(aiResponse.suggestions)) {
+      return getFallbackSuggestions(userProfile, availableCourses);
     }
 
-    // Map courseId về course objects
-    const suggestedCourses = parsedResponse.suggestions.map(suggestion => {
-      const course = availableCourses.find(c => c.id === suggestion.courseId);
-      return {
-        ...course,
-        aiReason: suggestion.reason,
-        aiConfidence: suggestion.confidence
-      };
-    }).filter(course => course.id); // Remove invalid courses
+    // Map courseId to actual course objects
+    const suggestions = aiResponse.suggestions
+      .map(suggestion => {
+        const course = availableCourses.find(c => c.id === suggestion.courseId);
+        return course ? { ...course, aiReason: suggestion.reason, confidence: suggestion.confidence } : null;
+      })
+      .filter(Boolean)
+      .slice(0, 5);
 
     return {
-      suggestions: suggestedCourses,
-      analysis: parsedResponse.analysis,
-      reason: parsedResponse.overallReason,
-      confidence: parsedResponse.suggestions.reduce((acc, s) => acc + s.confidence, 0) / parsedResponse.suggestions.length,
-      success: true
+      suggestions,
+      analysis: aiResponse.analysis,
+      reason: 'Gợi ý được tạo bởi AI dựa trên sở thích của bạn',
+      confidence: suggestions.length > 0 ? suggestions[0].confidence : 0.5,
+      usedAI: true,
+      usedFallback: false
     };
 
   } catch (error) {
     console.error('Error getting AI suggestions:', error);
-    
-    // Fallback to simple logic if Gemini fails
-    const fallbackSuggestions = getFallbackSuggestions(userProfile, availableCourses);
-    
-    return {
-      suggestions: fallbackSuggestions,
-      analysis: "Phân tích dựa trên logic cơ bản do AI tạm thời không khả dụng",
-      reason: "Gợi ý dựa trên các khóa học có rating cao và danh mục tương tự",
-      confidence: 0.6,
-      success: true,
-      usedFallback: true
-    };
+    return getFallbackSuggestions(userProfile, availableCourses);
   }
 };
 
-// Fallback logic khi Gemini không khả dụng
+// Fallback suggestions when AI fails
 const getFallbackSuggestions = (userProfile, availableCourses) => {
   const { viewHistory, favorites, categories } = userProfile;
   
-  // Lấy danh mục từ lịch sử xem và yêu thích
-  const interestedCategories = [...new Set([
-    ...viewHistory.map(c => c.category),
-    ...favorites.map(c => c.category)
-  ])];
-
-  // Lọc các khóa học chưa xem/yêu thích
-  const viewedIds = viewHistory.map(c => c.id);
-  const favoriteIds = favorites.map(c => c.id);
+  // Get favorite course IDs
+  const favoriteIds = favorites.map(fav => fav.id);
   
+  // Filter out already favorited courses
   const candidateCourses = availableCourses.filter(course => 
-    !viewedIds.includes(course.id) && !favoriteIds.includes(course.id)
+    !favoriteIds.includes(course.id)
   );
+  
+  // Priority 1: Same categories as viewed/favorited courses
+  const relatedCourses = candidateCourses.filter(course => 
+    categories.includes(course.category)
+  );
+  
+  // Priority 2: Popular courses (high rating)
+  const popularCourses = candidateCourses
+    .filter(course => course.rating >= 4.5)
+    .sort((a, b) => b.rating - a.rating);
+  
+  // Combine and deduplicate
+  const suggestions = [...relatedCourses, ...popularCourses]
+    .filter((course, index, self) => self.findIndex(c => c.id === course.id) === index)
+    .slice(0, 5);
 
-  // Ưu tiên các khóa học cùng danh mục và rating cao
-  const suggestions = candidateCourses
-    .map(course => ({
-      ...course,
-      priority: interestedCategories.includes(course.category) ? 2 : 1,
-      aiReason: interestedCategories.includes(course.category) 
-        ? `Cùng danh mục với sở thích của bạn: ${course.category}`
-        : `Khóa học có rating cao: ${course.rating}/5`,
-      aiConfidence: interestedCategories.includes(course.category) ? 0.8 : 0.6
-    }))
-    .sort((a, b) => b.priority * b.rating - a.priority * a.rating)
-    .slice(0, 4);
-
-  return suggestions;
-};
-
-// Test connection với Gemini
-export const testGeminiConnection = async () => {
-  try {
-    if (!validateApiKey(GEMINI_CONFIG.apiKey)) {
-      return { success: false, error: 'API key không hợp lệ' };
-    }
-
-    const model = genAI.getGenerativeModel({ 
-      model: GEMINI_CONFIG.model,
-      generationConfig: {
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 10,
-      }
-    });
-
-    const result = await model.generateContent('Hello');
-    const response = await result.response;
-    const text = response.text();
-
-    return { 
-      success: true, 
-      message: 'Kết nối Gemini thành công!',
-      response: text
-    };
-  } catch (error) {
-    return { 
-      success: false, 
-      error: error.message 
-    };
-  }
+  return {
+    suggestions,
+    analysis: categories.length > 0 ? 
+      `Dựa trên sở thích về ${categories.join(', ')}, chúng tôi gợi ý những khóa học tương tự.` :
+      'Chúng tôi gợi ý những khóa học phổ biến và chất lượng cao.',
+    reason: 'Gợi ý dựa trên danh mục quan tâm và độ phổ biến',
+    confidence: 0.7,
+    usedAI: false,
+    usedFallback: true
+  };
 };
 
 export default {
-  getAICourseSuggestions,
-  testGeminiConnection
+  getAICourseSuggestions
 }; 
