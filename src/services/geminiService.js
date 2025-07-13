@@ -1,11 +1,8 @@
-import OpenAI from 'openai';
-import { OPENAI_CONFIG, validateApiKey } from '../config/openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GEMINI_CONFIG, validateApiKey } from '../config/gemini';
 
-// Khởi tạo OpenAI client
-const openai = new OpenAI({
-  apiKey: OPENAI_CONFIG.apiKey,
-  dangerouslyAllowBrowser: true // Chỉ cho development/demo
-});
+// Khởi tạo Gemini client
+const genAI = new GoogleGenerativeAI(GEMINI_CONFIG.apiKey);
 
 // Tạo prompt cho gợi ý khóa học
 const createSuggestionPrompt = (userProfile, availableCourses) => {
@@ -49,45 +46,51 @@ Chỉ trả về JSON, không thêm text khác.
   `;
 };
 
-// Gọi OpenAI API để lấy gợi ý
+// Gọi Gemini API để lấy gợi ý
 export const getAICourseSuggestions = async (userProfile, availableCourses) => {
   try {
     // Kiểm tra API key
-    if (!validateApiKey(OPENAI_CONFIG.apiKey)) {
-      throw new Error('OpenAI API key không hợp lệ');
+    if (!validateApiKey(GEMINI_CONFIG.apiKey)) {
+      throw new Error('Gemini API key không hợp lệ');
     }
 
     // Tạo prompt
     const prompt = createSuggestionPrompt(userProfile, availableCourses);
 
-    // Gọi OpenAI API
-    const completion = await openai.chat.completions.create({
-      model: OPENAI_CONFIG.model,
-      messages: [
-        {
-          role: 'system',
-          content: 'Bạn là một AI chuyên gia về giáo dục, chuyên gợi ý khóa học phù hợp cho học viên dựa trên sở thích và hành vi học tập.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: OPENAI_CONFIG.temperature,
-      max_tokens: OPENAI_CONFIG.maxTokens,
-      response_format: { type: 'json_object' }
+    // Khởi tạo model
+    const model = genAI.getGenerativeModel({ 
+      model: GEMINI_CONFIG.model,
+      generationConfig: GEMINI_CONFIG.generationConfig,
+      safetySettings: GEMINI_CONFIG.safetySettings
     });
 
-    // Parse phản hồi
-    const response = JSON.parse(completion.choices[0].message.content);
+    // Gọi Gemini API
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Parse phản hồi JSON
+    let parsedResponse;
+    try {
+      // Tìm và extract JSON từ response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        parsedResponse = JSON.parse(jsonMatch[0]);
+      } else {
+        parsedResponse = JSON.parse(text);
+      }
+    } catch (parseError) {
+      console.error('Error parsing Gemini response:', parseError);
+      throw new Error('Phản hồi từ AI không hợp lệ');
+    }
     
     // Validate response structure
-    if (!response.suggestions || !Array.isArray(response.suggestions)) {
+    if (!parsedResponse.suggestions || !Array.isArray(parsedResponse.suggestions)) {
       throw new Error('Phản hồi từ AI không hợp lệ');
     }
 
     // Map courseId về course objects
-    const suggestedCourses = response.suggestions.map(suggestion => {
+    const suggestedCourses = parsedResponse.suggestions.map(suggestion => {
       const course = availableCourses.find(c => c.id === suggestion.courseId);
       return {
         ...course,
@@ -98,16 +101,16 @@ export const getAICourseSuggestions = async (userProfile, availableCourses) => {
 
     return {
       suggestions: suggestedCourses,
-      analysis: response.analysis,
-      reason: response.overallReason,
-      confidence: response.suggestions.reduce((acc, s) => acc + s.confidence, 0) / response.suggestions.length,
+      analysis: parsedResponse.analysis,
+      reason: parsedResponse.overallReason,
+      confidence: parsedResponse.suggestions.reduce((acc, s) => acc + s.confidence, 0) / parsedResponse.suggestions.length,
       success: true
     };
 
   } catch (error) {
     console.error('Error getting AI suggestions:', error);
     
-    // Fallback to simple logic if OpenAI fails
+    // Fallback to simple logic if Gemini fails
     const fallbackSuggestions = getFallbackSuggestions(userProfile, availableCourses);
     
     return {
@@ -121,7 +124,7 @@ export const getAICourseSuggestions = async (userProfile, availableCourses) => {
   }
 };
 
-// Fallback logic khi OpenAI không khả dụng
+// Fallback logic khi Gemini không khả dụng
 const getFallbackSuggestions = (userProfile, availableCourses) => {
   const { viewHistory, favorites, categories } = userProfile;
   
@@ -155,23 +158,31 @@ const getFallbackSuggestions = (userProfile, availableCourses) => {
   return suggestions;
 };
 
-// Test connection với OpenAI
-export const testOpenAIConnection = async () => {
+// Test connection với Gemini
+export const testGeminiConnection = async () => {
   try {
-    if (!validateApiKey(OPENAI_CONFIG.apiKey)) {
+    if (!validateApiKey(GEMINI_CONFIG.apiKey)) {
       return { success: false, error: 'API key không hợp lệ' };
     }
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: 'Hello' }],
-      max_tokens: 5
+    const model = genAI.getGenerativeModel({ 
+      model: GEMINI_CONFIG.model,
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 10,
+      }
     });
+
+    const result = await model.generateContent('Hello');
+    const response = await result.response;
+    const text = response.text();
 
     return { 
       success: true, 
-      message: 'Kết nối OpenAI thành công!',
-      usage: completion.usage
+      message: 'Kết nối Gemini thành công!',
+      response: text
     };
   } catch (error) {
     return { 
@@ -183,5 +194,5 @@ export const testOpenAIConnection = async () => {
 
 export default {
   getAICourseSuggestions,
-  testOpenAIConnection
+  testGeminiConnection
 }; 
