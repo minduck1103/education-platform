@@ -31,6 +31,15 @@ const Home = () => {
 
   // Handle course detail modal
   const handleCourseClick = (course) => {
+    // Track view history
+    try {
+      const existingHistory = JSON.parse(localStorage.getItem('viewHistory') || '[]');
+      const updatedHistory = [course.id, ...existingHistory.filter(id => id !== course.id)].slice(0, 10);
+      localStorage.setItem('viewHistory', JSON.stringify(updatedHistory));
+    } catch (error) {
+      console.error('Error updating view history:', error);
+    }
+    
     setSelectedCourse(course);
     setShowCourseDetail(true);
   };
