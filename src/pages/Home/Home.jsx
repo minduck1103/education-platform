@@ -238,12 +238,18 @@ const Home = () => {
       />
 
       {/* Auth Modal */}
-      {showAuthModal && (
-        <AuthModal 
+      <Modal
+        isOpen={showAuthModal}
+        onClose={handleCloseAuth}
+        size="xl"
+        showCloseButton={false}
+        noPadding={true}
+      >
+        <AuthModal
           onClose={handleCloseAuth}
           initialMode={authMode}
         />
-      )}
+      </Modal>
     </div>
   );
 };

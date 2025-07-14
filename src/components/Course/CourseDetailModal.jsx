@@ -3,6 +3,7 @@ import { FaStar, FaStarHalfAlt, FaRegStar, FaClock, FaUsers, FaTag, FaGraduation
 import { HeartIcon } from '@heroicons/react/24/solid';
 import { HeartIcon as HeartOutlineIcon } from '@heroicons/react/24/outline';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import Modal from '../common/Modal';
 import LoginRequiredModal from '../common/LoginRequiredModal';
 import AuthModal from '../Auth/AuthModal';
 
@@ -235,12 +236,18 @@ const CourseDetailModal = ({ course }) => {
       />
 
       {/* Auth Modal */}
-      {showAuthModal && (
-        <AuthModal 
+      <Modal
+        isOpen={showAuthModal}
+        onClose={handleCloseAuth}
+        size="xl"
+        showCloseButton={false}
+        noPadding={true}
+      >
+        <AuthModal
           onClose={handleCloseAuth}
           initialMode={authMode}
         />
-      )}
+      </Modal>
     </div>
   );
 };
