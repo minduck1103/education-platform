@@ -132,9 +132,9 @@ const Home = () => {
 
           {/* Suggestions Grid */}
           {suggestions.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
               {suggestions.map((course) => (
-                <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group hover:-translate-y-1 border border-purple-100">
+                <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group hover:-translate-y-1 border border-purple-100 h-full flex flex-col">
                   <div className="relative">
                     <img 
                       src={course.image} 
@@ -146,15 +146,15 @@ const Home = () => {
                     </div>
                   </div>
                   
-                  <div className="p-6">
+                  <div className="p-6 flex flex-col flex-grow">
                     <h3 className="font-bold text-gray-800 mb-2 text-lg line-clamp-2 group-hover:text-purple-600 transition-colors">{course.name}</h3>
-                    <p className="text-gray-600 mb-4 text-sm line-clamp-3">{course.description}</p>
+                    <p className="text-gray-600 mb-4 text-sm line-clamp-3 flex-grow">{course.description}</p>
                     
-                    <div className="flex justify-between items-center">
-                      <span className="text-2xl font-bold text-purple-600">{course.price.toLocaleString('vi-VN')}đ</span>
+                    <div className="flex justify-between items-center mt-auto">
+                      <span className="text-2xl font-bold text-ocean-600">{course.price.toLocaleString('vi-VN')}đ</span>
                       <button 
                         onClick={() => handleCourseClick(course)}
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-md hover:from-purple-500 hover:to-pink-500 transition-all shadow-md hover:shadow-lg"
+                        className="bg-gradient-to-r from-ocean-600 to-ocean-700 text-white px-4 py-2 rounded-md hover:from-ocean-500 hover:to-ocean-600 transition-all shadow-md hover:shadow-lg"
                       >
                         Xem chi tiết
                       </button>
@@ -182,9 +182,9 @@ const Home = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ocean-600"></div>
             </div>
           ) : courses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
               {courses.map((course) => (
-                <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group hover:-translate-y-1">
+                <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group hover:-translate-y-1 h-full flex flex-col">
                   <div className="relative">
                     <img 
                       src={course.image} 
@@ -193,10 +193,10 @@ const Home = () => {
                     />
                   </div>
                   
-                  <div className="p-6">
+                  <div className="p-6 flex flex-col flex-grow">
                     <h3 className="font-bold text-gray-800 mb-2 text-lg line-clamp-2 group-hover:text-ocean-600 transition-colors">{course.name}</h3>
-                    <p className="text-gray-600 mb-4 text-sm line-clamp-3">{course.description}</p>
-                    <div className="flex justify-between items-center">
+                    <p className="text-gray-600 mb-4 text-sm line-clamp-3 flex-grow">{course.description}</p>
+                    <div className="flex justify-between items-center mt-auto">
                       <span className="text-2xl font-bold text-ocean-600">{course.price.toLocaleString('vi-VN')}đ</span>
                       <button 
                         onClick={() => handleCourseClick(course)}
