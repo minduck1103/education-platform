@@ -147,7 +147,7 @@ const Home = () => {
                   </div>
                   
                   <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="font-bold text-gray-800 mb-2 text-lg line-clamp-2 group-hover:text-purple-600 transition-colors">{course.name}</h3>
+                    <h3 className="font-bold text-gray-800 mb-2 text-lg line-clamp-2 group-hover:text-ocean-600 transition-colors">{course.name}</h3>
                     <p className="text-gray-600 mb-4 text-sm line-clamp-3 flex-grow">{course.description}</p>
                     
                     <div className="flex justify-between items-center mt-auto">
