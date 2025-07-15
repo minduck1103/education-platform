@@ -75,23 +75,23 @@ const Modal = ({
           relative bg-white rounded-lg shadow-2xl 
           transform transition-all duration-300 
           ${sizeClasses[size]} w-full mx-4
-          max-h-[90vh] overflow-y-auto
+          ${noPadding ? 'h-[90vh]' : 'max-h-[90vh] overflow-y-auto'}
         `}
       >
         {/* Close button */}
         {showCloseButton && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-2 right-2 z-50 text-white hover:text-gray-200 rounded-full p-1.5 transition-all duration-200"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
 
         {/* Content */}
-        <div className={noPadding ? '' : 'p-6'}>
+        <div className={noPadding ? 'h-full' : 'p-6'}>
           {children}
         </div>
       </div>
