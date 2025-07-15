@@ -3,7 +3,7 @@
 // Ví dụ: VITE_GEMINI_API_KEY trong file .env
 
 export const GEMINI_CONFIG = {
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY,
+  apiKey: 'AIzaSyDIy1C3AyspMcq3aMcdtc8bZLuXtnfcTX8',
   model: 'gemini-1.5-flash',
   generationConfig: {
     temperature: 0.7,

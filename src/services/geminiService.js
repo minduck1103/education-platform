@@ -4,6 +4,21 @@ import { GEMINI_CONFIG, validateApiKey } from '../config/gemini';
 // Khởi tạo Gemini client
 const genAI = new GoogleGenerativeAI(GEMINI_CONFIG.apiKey);
 
+// Check API key on initialization
+if (!validateApiKey(GEMINI_CONFIG.apiKey)) {
+  console.warn(`
+🚨 GEMINI API KEY CHƯA ĐƯỢC CẤU HÌNH ĐÚNG CÁCH!
+
+📋 Hướng dẫn setup:
+1. Tạo file .env trong thư mục education-platform-app/
+2. Thêm dòng: VITE_GEMINI_API_KEY=your_api_key_here
+3. Lấy API key từ: https://aistudio.google.com/app/apikey
+4. Restart development server
+
+💡 Chatbot sẽ sử dụng fallback responses khi không có API key hợp lệ.
+  `);
+}
+
 // Tạo prompt cho gợi ý khóa học
 const createSuggestionPrompt = (userProfile, availableCourses) => {
   const { viewHistory, favorites, categories } = userProfile;
@@ -54,8 +69,12 @@ export const getAICourseSuggestions = async (userProfile, availableCourses) => {
       return getFallbackSuggestions(userProfile, availableCourses);
     }
 
-    // Tạo model
-    const model = genAI.getGenerativeModel({ 
+    // Debug: Log API key để kiểm tra
+    console.log('🔑 Suggestions API Key being used:', GEMINI_CONFIG.apiKey?.substring(0, 10) + '...');
+    
+    // Khởi tạo lại genAI với API key hiện tại
+    const currentGenAI = new GoogleGenerativeAI(GEMINI_CONFIG.apiKey);
+    const model = currentGenAI.getGenerativeModel({ 
       model: GEMINI_CONFIG.model,
       generationConfig: GEMINI_CONFIG.generationConfig,
       safetySettings: GEMINI_CONFIG.safetySettings
@@ -141,6 +160,47 @@ const getFallbackSuggestions = (userProfile, availableCourses) => {
   };
 };
 
+// Chatbot response function
+export const getChatbotResponse = async (prompt) => {
+  try {
+    // Tạm thời disable AI chatbot để sử dụng fallback responses
+    console.warn('⚠️ AI Chatbot tạm thời disabled. Sử dụng fallback responses.');
+    return null;
+    
+    // Validate API key first
+    if (!validateApiKey(GEMINI_CONFIG.apiKey)) {
+      console.warn('⚠️ Gemini API key không hợp lệ hoặc chưa được cấu hình. Chatbot sẽ sử dụng fallback responses.');
+      // Return null to trigger fallback in chatbotService
+      return null;
+    }
+
+    // Debug: Log API key để kiểm tra
+    console.log('🔑 Chatbot API Key being used:', GEMINI_CONFIG.apiKey?.substring(0, 10) + '...');
+    
+    // Khởi tạo lại genAI với API key hiện tại
+    const currentGenAI = new GoogleGenerativeAI(GEMINI_CONFIG.apiKey);
+    const model = currentGenAI.getGenerativeModel({ 
+      model: GEMINI_CONFIG.model,
+      generationConfig: GEMINI_CONFIG.generationConfig,
+      safetySettings: GEMINI_CONFIG.safetySettings
+    });
+    
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    if (!text || text.trim() === '') {
+      throw new Error('Empty response from Gemini API');
+    }
+    
+    return text.trim();
+  } catch (error) {
+    console.error('Gemini chatbot error:', error);
+    throw error;
+  }
+};
+
 export default {
-  getAICourseSuggestions
+  getAICourseSuggestions,
+  getChatbotResponse
 }; 
