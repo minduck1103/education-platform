@@ -141,6 +141,44 @@ const getFallbackSuggestions = (userProfile, availableCourses) => {
   };
 };
 
+// Chatbot response function cho ChatbotService sử dụng
+export const getChatbotResponse = async (prompt) => {
+  try {
+    // Validate API key first
+    if (!validateApiKey(GEMINI_CONFIG.apiKey)) {
+      console.warn('⚠️ Gemini API key không hợp lệ hoặc chưa được cấu hình. Chatbot sẽ sử dụng fallback responses.');
+      return null;
+    }
+
+    // Tạo fresh GoogleGenerativeAI instance
+    const currentGenAI = new GoogleGenerativeAI(GEMINI_CONFIG.apiKey);
+    const model = currentGenAI.getGenerativeModel({ 
+      model: GEMINI_CONFIG.model,
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 1024, // Giảm để tránh lỗi
+      },
+      safetySettings: GEMINI_CONFIG.safetySettings
+    });
+    
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    if (!text || text.trim() === '') {
+      throw new Error('Empty response from Gemini API');
+    }
+    
+    return text.trim();
+  } catch (error) {
+    console.error('Gemini chatbot error:', error);
+    throw error;
+  }
+};
+
 export default {
-  getAICourseSuggestions
+  getAICourseSuggestions,
+  getChatbotResponse
 }; 
