@@ -75,7 +75,7 @@ const Modal = ({
           relative bg-white rounded-lg shadow-2xl 
           transform transition-all duration-300 
           ${sizeClasses[size]} w-full mx-4
-          ${noPadding ? 'h-[90vh]' : 'max-h-[90vh] overflow-y-auto'}
+          max-h-[90vh] overflow-y-auto
         `}
       >
         {/* Close button */}

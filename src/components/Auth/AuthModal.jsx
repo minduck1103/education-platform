@@ -116,7 +116,7 @@ const AuthModal = ({ onClose, initialMode = 'login' }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden w-full min-h-[500px] flex flex-col">
+    <div className="bg-white rounded-lg overflow-hidden w-full max-h-[90vh] overflow-y-auto">
       {/* Header */}
       <div className="bg-gradient-to-r from-ocean-600 via-ocean-700 to-ocean-800 px-8 py-6 relative">
         <h2 className="text-white text-xl font-bold">
@@ -137,7 +137,7 @@ const AuthModal = ({ onClose, initialMode = 'login' }) => {
       </div>
 
       {/* Content */}
-      <div className="p-8 flex-1">
+      <div className="p-8">
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
